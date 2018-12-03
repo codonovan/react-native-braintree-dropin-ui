@@ -11,6 +11,7 @@ RCT_EXPORT_MODULE()
 RCT_REMAP_METHOD(show,
                  showWithOptions:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
+    // expose these properties
     self.resolve                  = resolve;
     self.reject                   = reject;
     self.didAuthorizeApplePayment = false;
