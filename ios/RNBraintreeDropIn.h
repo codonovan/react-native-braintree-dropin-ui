@@ -31,8 +31,6 @@
 
 @property (nonatomic) RCTPromiseResolveBlock _Nonnull resolve;
 
-@property (nonatomic) RCTPromiseResolveBlock _Nonnull resolve;
-
 @property (nonatomic) RCTPromiseRejectBlock _Nonnull reject;
 
 @property (nonatomic) Boolean didAuthorizeApplePayment;
