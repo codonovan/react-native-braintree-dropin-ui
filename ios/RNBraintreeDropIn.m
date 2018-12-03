@@ -11,7 +11,9 @@ RCT_EXPORT_MODULE()
 RCT_REMAP_METHOD(show,
                  showWithOptions:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    self.resolve = resolve;
+    self.resolve                  = resolve;
+    self.reject                   = reject;
+    self.didAuthorizeApplePayment = false;
 
     NSString* clientToken = options[@"clientToken"];
     if (!clientToken) {
@@ -107,6 +109,9 @@ RCT_REMAP_METHOD(show,
     [applePayClient tokenizeApplePayPayment:payment
                                  completion:^(BTApplePayCardNonce *tokenizedApplePayPayment,
                                               NSError *error) {
+        // flag that the user authorized the payment
+        self.didAuthorizeApplePayment = true;
+       
         if (tokenizedApplePayPayment) {
             // On success, send nonce to your server for processing.
             // If applicable, address information is accessible in `payment`.
@@ -135,7 +140,16 @@ RCT_REMAP_METHOD(show,
 
 // Be sure to implement -paymentAuthorizationViewControllerDidFinish:
 - (void)paymentAuthorizationViewControllerDidFinish:(PKPaymentAuthorizationViewController *)controller{
+    // dismiss PKPaymentSheet
     [self.reactRoot dismissViewControllerAnimated:YES completion:nil];
+    // check if payment WAS authorized
+    //
+    // it won't be if the user just dismissed the PKPaymentAuthorizationViewController
+    //
+    if (self.didAuthorizeApplePayment == false) {
+        // reject/cancel
+        self.reject(@"USER_CANCELLATION", @"The user cancelled the Apple Payment process", nil);
+    }
 }
 
 + (void)resolvePayment:(BTDropInResult* _Nullable)result deviceData:(NSString * _Nonnull)deviceDataCollector resolver:(RCTPromiseResolveBlock _Nonnull)resolve {
