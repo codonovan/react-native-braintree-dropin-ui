@@ -11,7 +11,10 @@ RCT_EXPORT_MODULE()
 RCT_REMAP_METHOD(show,
                  showWithOptions:(NSDictionary*)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    self.resolve = resolve;
+    // expose these properties
+    self.resolve                  = resolve;
+    self.reject                   = reject;
+    self.didAuthorizeApplePayment = false;
 
     NSString* clientToken = options[@"clientToken"];
     if (!clientToken) {
@@ -79,13 +82,13 @@ RCT_REMAP_METHOD(show,
                         reject(@"3DSECURE_NOT_ABLE_TO_SHIFT_LIABILITY", @"3D Secure liability cannot be shifted", nil);
                     } else if (!cardNonce.threeDSecureInfo.liabilityShifted && cardNonce.threeDSecureInfo.wasVerified) {
                         reject(@"3DSECURE_LIABILITY_NOT_SHIFTED", @"3D Secure liability was not shifted", nil);
-                    } else if(result.paymentMethod == nil && result.paymentOptionType == 16){ //Apple Pay
+                    } else if(result.paymentMethod == nil && result.paymentOptionType == 18){ //Apple Pay
                         UIViewController *ctrl = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
                         [ctrl presentViewController:self.viewController animated:YES completion:nil];
                     } else{
                         [[self class] resolvePayment:result deviceData:self.deviceDataCollector resolver:resolve];
                     }
-                } else if(result.paymentMethod == nil && result.paymentOptionType == 16){ //Apple Pay
+                } else if(result.paymentMethod == nil && result.paymentOptionType == 18){ //Apple Pay
                     UIViewController *ctrl = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
                     [ctrl presentViewController:self.viewController animated:YES completion:nil];
                 } else{
@@ -107,6 +110,9 @@ RCT_REMAP_METHOD(show,
     [applePayClient tokenizeApplePayPayment:payment
                                  completion:^(BTApplePayCardNonce *tokenizedApplePayPayment,
                                               NSError *error) {
+        // flag that the user authorized the payment
+        self.didAuthorizeApplePayment = true;
+       
         if (tokenizedApplePayPayment) {
             // On success, send nonce to your server for processing.
             // If applicable, address information is accessible in `payment`.
@@ -135,7 +141,16 @@ RCT_REMAP_METHOD(show,
 
 // Be sure to implement -paymentAuthorizationViewControllerDidFinish:
 - (void)paymentAuthorizationViewControllerDidFinish:(PKPaymentAuthorizationViewController *)controller{
+    // dismiss PKPaymentSheet
     [self.reactRoot dismissViewControllerAnimated:YES completion:nil];
+    // check if payment WAS authorized
+    //
+    // it won't be if the user just dismissed the PKPaymentAuthorizationViewController
+    //
+    if (self.didAuthorizeApplePayment == false) {
+        // reject/cancel
+        self.reject(@"USER_CANCELLATION", @"The user cancelled the Apple Payment process", nil);
+    }
 }
 
 + (void)resolvePayment:(BTDropInResult* _Nullable)result deviceData:(NSString * _Nonnull)deviceDataCollector resolver:(RCTPromiseResolveBlock _Nonnull)resolve {
