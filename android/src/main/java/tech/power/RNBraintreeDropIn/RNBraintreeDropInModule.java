@@ -17,7 +17,6 @@ import com.braintreepayments.api.dropin.DropInResult;
 import com.braintreepayments.api.models.PaymentMethodNonce;
 import com.braintreepayments.api.models.CardNonce;
 import com.braintreepayments.api.models.ThreeDSecureInfo;
-import com.braintreepayments.api.models.GooglePaymentRequest;
 import com.google.android.gms.wallet.TransactionInfo;
 import com.google.android.gms.wallet.WalletConstants;
 
@@ -53,7 +52,7 @@ public class RNBraintreeDropInModule extends ReactContextBaseJavaModule {
     dropInRequest.collectDeviceData(true);
 
     if(options.getBoolean("googlePay")){
-      GooglePaymentRequest googlePaymentRequest = new GooglePaymentRequest()
+      GooiiPaymentRequest googlePaymentRequest = new GooiiPaymentRequest()
         .transactionInfo(TransactionInfo.newBuilder()
           .setTotalPrice(options.getString("orderTotal"))
           .setTotalPriceStatus(WalletConstants.TOTAL_PRICE_STATUS_FINAL)
