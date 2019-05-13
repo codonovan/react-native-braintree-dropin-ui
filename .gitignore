@@ -1,4 +1,5 @@
 # Dependency directories
+**/.DS_Store
 android/.idea/
 android/gradle/
 android/gradlew
