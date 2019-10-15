@@ -11,7 +11,7 @@
 #import "BraintreeDropIn.h"
 #import "BTCardNonce.h"
 #import "BTDataCollector.h"
-
+#import "BTUIKPaymentOptionType.h"
 #import "BraintreeApplePay.h"
 
 @interface RNBraintreeDropIn : NSObject <RCTBridgeModule>
