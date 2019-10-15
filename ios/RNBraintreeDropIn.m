@@ -22,6 +22,12 @@ RCT_REMAP_METHOD(show,
         return;
     }
 
+    // iOS 13 seems to lose font settings so explicitly set them here before
+    // displaying the drop in UI
+    BTUIKAppearance.sharedInstance.fontFamily     = @"HelveticaNeue";
+    BTUIKAppearance.sharedInstance.boldFontFamily = @"HelveticaNeue-Bold";
+    
+    // Should be able to create the drop in request
     BTDropInRequest *request = [[BTDropInRequest alloc] init];
 
     NSDictionary* threeDSecureOptions = options[@"threeDSecure"];
